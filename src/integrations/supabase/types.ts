@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      wedding_rsvps: {
+        Row: {
+          children: boolean
+          created_at: string
+          guest_count: number
+          guest_name: string
+          id: string
+          note: string | null
+          phone: string | null
+          vegetarian: boolean
+        }
+        Insert: {
+          children?: boolean
+          created_at?: string
+          guest_count?: number
+          guest_name: string
+          id?: string
+          note?: string | null
+          phone?: string | null
+          vegetarian?: boolean
+        }
+        Update: {
+          children?: boolean
+          created_at?: string
+          guest_count?: number
+          guest_name?: string
+          id?: string
+          note?: string | null
+          phone?: string | null
+          vegetarian?: boolean
+        }
+        Relationships: []
+      }
+      wedding_wishes: {
+        Row: {
+          created_at: string
+          guest_name: string
+          id: string
+          message: string
+        }
+        Insert: {
+          created_at?: string
+          guest_name: string
+          id?: string
+          message: string
+        }
+        Update: {
+          created_at?: string
+          guest_name?: string
+          id?: string
+          message?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
