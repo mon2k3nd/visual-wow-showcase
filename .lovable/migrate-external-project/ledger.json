@@ -1,0 +1,14 @@
+{
+  "source": "https://github.com/mon2k3nd/visual-showcase",
+  "capabilities": [
+    {"capability":"application code","source":"GitHub","outcome":"migrate","status":"in_progress","next_action":"Port and refine mobile-first invitation"},
+    {"capability":"database schema","source":"Drizzle migration","outcome":"migrate","status":"verified","next_action":"None"},
+    {"capability":"application records","source":"GitHub","outcome":"migrate","status":"pending","next_action":"No record export supplied"},
+    {"capability":"auth identities","source":"GitHub","outcome":"not_detected","status":"verified","next_action":"None"},
+    {"capability":"uploaded file bytes","source":"GitHub and chat uploads","outcome":"migrate","status":"in_progress","next_action":"Use supplied wedding photos and music"},
+    {"capability":"external providers","source":"GitHub","outcome":"not_detected","status":"verified","next_action":"None"},
+    {"capability":"public endpoints and webhooks","source":"GitHub","outcome":"not_detected","status":"verified","next_action":"None"},
+    {"capability":"cutover","source":"GitHub","outcome":"migrate","status":"pending","next_action":"Publish after preview approval"},
+    {"capability":"verification","source":"Lovable preview","outcome":"verify","status":"pending","next_action":"Check mobile and desktop interactions"}
+  ]
+}
