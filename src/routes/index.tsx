@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { CalendarPlus, ChevronUp, Heart, MapPin, Maximize2, Music2, Navigation, Pause, Phone, Share2, Sparkles, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { CalendarPlus, ChevronLeft, ChevronRight, ChevronUp, Heart, MapPin, Maximize2, Music2, Navigation, Pause, Phone, Share2, Sparkles, X } from "lucide-react";
 import QRCode from "qrcode";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import img1 from "@/assets/TVT00967.JPG";
 import img2 from "@/assets/TVT00864.JPG";
 import img3 from "@/assets/TVT01258.JPG";
@@ -36,26 +37,30 @@ export const Route = createFileRoute("/")({
   component: WeddingInvitation,
 });
 
-const photos = [img1, img2, img3, img4, img5, img6, img7, img8, img9];
 const newPhotos = [n1.url, n2.url, n3.url, n4.url, n5.url, n6.url, n7.url, n8.url, n9.url, n10.url];
-const gallery = [...photos.slice(2), ...newPhotos];
-const strip = [n1.url, n4.url, n5.url, n6.url, n8.url, n9.url, n2.url, n3.url];
+const photos = [img1, img2, img3, img4, img5, img6, img7, img8, img9];
+const gallery = [...newPhotos, ...photos.slice(2)];
 const weddingDate = new Date("2026-10-03T10:00:00+07:00").getTime();
 
 function IconButton({ label, onClick, children, className = "" }: { label: string; onClick: () => void; children: React.ReactNode; className?: string }) {
-  return <button type="button" aria-label={label} title={label} onClick={onClick} className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border border-border bg-card/90 text-foreground shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-secondary ${className}`}>{children}</button>;
+  return <Button type="button" variant="glass" size="iconLg" aria-label={label} title={label} onClick={onClick} className={className}>{children}</Button>;
 }
 
 function WeddingInvitation() {
   const [opened, setOpened] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [progress, setProgress] = useState(0);
   const [qr, setQr] = useState("");
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [wishes, setWishes] = useState<Array<{ id: string; guest_name: string; message: string }>>([]);
   const [wishStatus, setWishStatus] = useState("");
   const audioRef = useRef<HTMLAudioElement>(null);
+  const touchStart = useRef(0);
+
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const showPrevious = useCallback(() => setLightboxIndex((current) => current === null ? null : (current - 1 + gallery.length) % gallery.length), []);
+  const showNext = useCallback(() => setLightboxIndex((current) => current === null ? null : (current + 1) % gallery.length), []);
 
   useEffect(() => {
     const update = () => {
@@ -70,6 +75,21 @@ function WeddingInvitation() {
     supabase.from("wedding_wishes").select("id,guest_name,message").order("created_at", { ascending: false }).limit(20).then(({ data }) => setWishes(data ?? []));
     return () => { window.clearInterval(timer); window.removeEventListener("scroll", onScroll); };
   }, []);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeLightbox();
+      if (event.key === "ArrowLeft") showPrevious();
+      if (event.key === "ArrowRight") showNext();
+    };
+    document.body.classList.add("overflow-hidden");
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [closeLightbox, lightboxIndex, showNext, showPrevious]);
 
   const calendarUrl = useMemo(() => {
     const details = encodeURIComponent("Lễ thành hôn Thảo My & Xuân Tú tại tư gia nhà trai, Chợ Gồ, Thôn Thanh Cù, Xã Hiệp Cường, Tỉnh Hưng Yên.");
@@ -106,11 +126,11 @@ function WeddingInvitation() {
     <audio ref={audioRef} src={music} loop preload="auto" />
     {!opened && <div className="fixed inset-0 z-50 grid place-items-center overflow-hidden bg-sky-soft px-6">
       <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/2 bg-secondary/40 [clip-path:polygon(0_35%,50%_0,100%_35%,100%_100%,0_100%)]" />
-      <button type="button" onClick={enterInvitation} className="reveal-up relative grid aspect-[1.45] w-full max-w-sm place-items-center overflow-hidden rounded-md border border-primary/25 bg-card film-shadow transition hover:scale-[1.02]">
+      <Button type="button" variant="envelope" onClick={enterInvitation} className="reveal-up relative grid aspect-[1.45] h-auto w-full max-w-sm place-items-center overflow-hidden p-0">
         <span className="absolute inset-x-0 top-0 h-1/2 origin-top bg-primary/15 [clip-path:polygon(0_0,100%_0,50%_100%)]" />
         <span className="z-10 grid h-20 w-20 place-items-center rounded-full bg-secondary font-display text-2xl italic text-secondary-foreground shadow-lg">M · T</span>
         <span className="absolute bottom-6 text-xs uppercase text-muted-foreground">Chạm để mở thiệp</span>
-      </button>
+      </Button>
     </div>}
     <div className="fixed inset-x-0 top-0 z-40 h-1 bg-border no-print"><div className="h-full bg-primary transition-[width]" style={{ width: `${progress}%` }} /></div>
     {[8, 29, 53, 76, 91].map((left, i) => <i key={left} className="petal" style={{ left: `${left}%`, animationDelay: `${i * 2.4}s` }} />)}
@@ -120,10 +140,10 @@ function WeddingInvitation() {
       {progress > 18 && <IconButton label="Lên đầu trang" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}><ChevronUp size={19} /></IconButton>}
     </div>
 
-    <section id="home" className="relative min-h-[92svh] overflow-hidden bg-foreground">
-      <img src={img1} alt="Thảo My và Xuân Tú" className="absolute inset-0 h-full w-full object-cover object-[48%_35%] opacity-80" />
-      <div className="absolute inset-0 bg-gradient-to-b from-foreground/25 via-transparent to-foreground/80" />
-      <div className="relative mx-auto flex min-h-[92svh] max-w-5xl flex-col items-center justify-end px-5 pb-16 text-center text-primary-foreground">
+    <section id="home" className="relative min-h-[94svh] overflow-hidden bg-foreground">
+      <img src={n1.url} alt="Thảo My và Xuân Tú trong ngày cưới" className="hero-photo absolute inset-0 h-full w-full object-cover object-[50%_32%]" />
+      <div className="hero-vignette absolute inset-0" />
+      <div className="relative mx-auto flex min-h-[94svh] max-w-5xl flex-col items-center justify-end px-5 pb-14 text-center text-primary-foreground">
         <p className="mb-5 text-xs uppercase tracking-[.28em]">Save the date · 03.10.2026</p>
         <h1 className="text-6xl leading-[.88] sm:text-8xl">Thảo My<br/><span className="text-secondary">&</span> Xuân Tú</h1>
         <p className="mt-6 max-w-md text-sm font-light leading-7">Hai con người… Hai hành trình… Một đích đến.</p>
@@ -133,7 +153,7 @@ function WeddingInvitation() {
 
     <section id="invitation" className="mx-auto grid max-w-5xl gap-10 px-6 py-24 md:grid-cols-[.8fr_1.2fr] md:items-center">
       <div><p className="text-xs uppercase tracking-[.24em] text-primary">Chương I · Lời mời</p><h2 className="mt-4 text-5xl leading-tight">Ngày chúng mình gọi nhau là gia đình</h2><p className="mt-6 max-w-md leading-8 text-muted-foreground">Một chương mới sắp bắt đầu. Sẽ thật trọn vẹn nếu trong ngày vui ấy, chúng mình được nhìn thấy nụ cười của bạn — người đã yêu thương và đồng hành cùng hai đứa.</p></div>
-      <button type="button" onClick={() => setLightbox(img2)} className="relative ml-auto w-[88%] overflow-hidden rounded-sm film-shadow md:w-full"><img src={img2} alt="Ảnh cưới của Thảo My và Xuân Tú" className="aspect-[3/4] w-full object-cover"/><Maximize2 className="absolute bottom-4 right-4 text-primary-foreground" size={20}/></button>
+       <Button type="button" variant="image" onClick={() => setLightboxIndex(gallery.indexOf(img2))} className="relative ml-auto h-auto w-[88%] overflow-hidden p-0 md:w-full"><img src={img2} alt="Ảnh cưới của Thảo My và Xuân Tú" className="aspect-[3/4] w-full object-cover"/><span className="absolute bottom-4 right-4 grid h-10 w-10 place-items-center rounded-full bg-foreground/45 text-primary-foreground backdrop-blur"><Maximize2 size={18}/></span></Button>
     </section>
 
     <section className="bg-foreground px-5 py-24 text-primary-foreground">
@@ -151,8 +171,8 @@ function WeddingInvitation() {
       ].map(([n,title,text], i) => <article key={n} className={`relative mb-16 max-w-xl ${i % 2 ? "md:ml-28" : ""}`}><span className="absolute -left-[45px] top-1 grid h-7 w-7 place-items-center rounded-full bg-primary text-[10px] text-primary-foreground">{n}</span><h3 className="text-3xl">{title}</h3><p className="mt-3 leading-7 text-muted-foreground">{text}</p></article>)}</div>
     </section>
 
-    <section id="gallery" className="bg-sky-soft px-3 py-24"><div className="mx-auto max-w-6xl"><div className="px-3 text-center"><p className="text-xs uppercase tracking-[.24em] text-primary">Chương III · Những thước phim</p><h2 className="mt-4 text-5xl">Một đời, thật nhiều dịu dàng</h2></div>
-      <div className="mt-12 columns-2 gap-3 md:columns-3">{photos.slice(2).map((src,i) => <button type="button" key={src} onClick={() => setLightbox(src)} className="group relative mb-3 block w-full break-inside-avoid overflow-hidden rounded-sm"><img src={src} alt={`Khoảnh khắc cưới ${i+1}`} loading="lazy" className={`w-full object-cover transition duration-700 group-hover:scale-[1.03] ${i === 0 || i === 4 ? "aspect-[3/4]" : "aspect-[4/5]"}`}/><span className="absolute inset-0 grid place-items-center bg-foreground/0 text-primary-foreground opacity-0 transition group-hover:bg-foreground/15 group-hover:opacity-100"><Maximize2 size={24}/></span></button>)}</div></div>
+    <section id="gallery" className="gallery-stage py-20 md:py-28"><div className="mx-auto max-w-6xl"><div className="px-6 text-center"><p className="text-xs uppercase tracking-[.24em] text-primary">Chương III · Những thước phim</p><h2 className="mt-4 text-5xl">Một đời, thật nhiều dịu dàng</h2><p className="mx-auto mt-4 max-w-sm text-sm leading-6 text-muted-foreground">Chạm vào ảnh để xem trọn khoảnh khắc</p></div>
+      <div className="mt-12 grid grid-cols-2 gap-1.5 px-1.5 sm:gap-3 sm:px-3 md:grid-cols-3">{gallery.map((src,i) => <Button type="button" variant="image" key={src} onClick={() => setLightboxIndex(i)} className={`gallery-tile group relative h-auto overflow-hidden p-0 ${i === 0 || i === 5 || i === 10 ? "col-span-2 md:col-span-1" : ""}`}><img src={src} alt={`Khoảnh khắc cưới ${i+1}`} loading={i < 4 ? "eager" : "lazy"} className={`h-full w-full object-cover transition duration-700 group-hover:scale-[1.035] ${i === 0 || i === 5 || i === 10 ? "aspect-[16/10] md:aspect-[3/4]" : "aspect-[3/4]"}`}/><span className="gallery-sheen absolute inset-0"/><span className="absolute bottom-3 left-3 font-display text-sm italic text-primary-foreground/90">{String(i+1).padStart(2,"0")}</span></Button>)}</div></div>
     </section>
 
     <section id="date" className="mx-auto max-w-5xl px-6 py-24"><div className="grid gap-12 md:grid-cols-2"><div><p className="text-xs uppercase tracking-[.24em] text-primary">Chương IV · Hẹn ngày</p><h2 className="mt-4 text-5xl">Tháng Mười<br/>mình có hẹn</h2><p className="mt-6 text-muted-foreground">Dự báo thời tiết sẽ được cập nhật khi gần tới ngày cưới.</p></div><Calendar /></div>
@@ -168,7 +188,7 @@ function WeddingInvitation() {
 
     <section className="relative min-h-[82svh] overflow-hidden bg-foreground"><img src={img9} alt="Thảo My và Xuân Tú dưới tấm voan cưới" className="absolute inset-0 h-full w-full object-cover opacity-60"/><div className="absolute inset-0 bg-gradient-to-t from-foreground via-foreground/20 to-transparent"/><div className="relative mx-auto flex min-h-[82svh] max-w-xl flex-col items-center justify-end px-6 pb-20 text-center text-primary-foreground"><Sparkles className="mb-5 text-secondary"/><p className="leading-7 text-primary-foreground/75">Cảm ơn bạn đã đi qua từng trang nhỏ trong câu chuyện của chúng mình. Hẹn gặp nhau, cùng cười thật nhiều và lưu lại một ngày không thể nào quên.</p><h2 className="mt-8 text-5xl">The End</h2><p className="mt-2 text-xs uppercase tracking-[.28em] text-secondary">See you there</p><div className="mt-10 flex items-center gap-4">{qr && <img src={qr} alt="Mã QR thiệp cưới" className="h-24 w-24 rounded-sm"/>}<div className="text-left text-xs leading-6 text-primary-foreground/65">Thảo My & Xuân Tú<br/>03 · 10 · 2026</div></div></div></section>
 
-    {lightbox && <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 grid place-items-center bg-foreground/95 p-3" onClick={() => setLightbox(null)}><IconButton label="Đóng ảnh" onClick={() => setLightbox(null)} className="absolute right-4 top-4"><X size={20}/></IconButton><img src={lightbox} alt="Ảnh cưới phóng to" className="max-h-[92vh] max-w-full object-contain" onClick={e=>e.stopPropagation()}/></div>}
+     {lightboxIndex !== null && <div role="dialog" aria-modal="true" aria-label="Xem ảnh cưới" className="lightbox fixed inset-0 z-50 grid place-items-center bg-foreground p-0" onClick={closeLightbox} onTouchStart={(event) => { touchStart.current = event.changedTouches[0]?.clientX ?? 0; }} onTouchEnd={(event) => { const distance = (event.changedTouches[0]?.clientX ?? 0) - touchStart.current; if (Math.abs(distance) > 45) distance > 0 ? showPrevious() : showNext(); }}><div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-foreground/75 to-transparent px-4 pb-10 pt-[max(1rem,env(safe-area-inset-top))]"><span className="text-xs tracking-[.18em] text-primary-foreground/75">{String(lightboxIndex+1).padStart(2,"0")} / {gallery.length}</span><IconButton label="Đóng ảnh" onClick={closeLightbox}><X size={20}/></IconButton></div><img src={gallery[lightboxIndex]} alt={`Ảnh cưới ${lightboxIndex+1}`} className="h-full w-full object-contain" onClick={e=>e.stopPropagation()}/><div className="absolute inset-x-0 bottom-0 z-10 grid grid-cols-[auto_1fr_auto] items-center gap-5 bg-gradient-to-t from-foreground/80 to-transparent px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-12"><IconButton label="Ảnh trước" onClick={showPrevious}><ChevronLeft size={21}/></IconButton><p className="text-center text-[10px] uppercase tracking-[.2em] text-primary-foreground/60">Vuốt để xem tiếp</p><IconButton label="Ảnh tiếp theo" onClick={showNext}><ChevronRight size={21}/></IconButton></div></div>}
   </main>;
 }
 
