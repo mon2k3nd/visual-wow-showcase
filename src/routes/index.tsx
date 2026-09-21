@@ -4,15 +4,15 @@ import { CalendarPlus, ChevronLeft, ChevronRight, ChevronUp, Heart, MapPin, Maxi
 import QRCode from "qrcode";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import img1 from "@/assets/TVT00967.JPG";
-import img2 from "@/assets/TVT00864.JPG";
-import img3 from "@/assets/TVT01258.JPG";
-import img4 from "@/assets/TVT01234.JPG";
-import img5 from "@/assets/TVT01222.JPG";
-import img6 from "@/assets/TVT01187.JPG";
-import img7 from "@/assets/TVT01136.JPG";
-import img8 from "@/assets/TVT01066.JPG";
-import img9 from "@/assets/TVT01057.JPG";
+import a1 from "@/assets/TVT00967.JPG.asset.json";
+import a2 from "@/assets/TVT00864.JPG.asset.json";
+import a3 from "@/assets/TVT01258.JPG.asset.json";
+import a4 from "@/assets/TVT01234.JPG.asset.json";
+import a5 from "@/assets/TVT01222.JPG.asset.json";
+import a6 from "@/assets/TVT01187.JPG.asset.json";
+import a7 from "@/assets/TVT01136.JPG.asset.json";
+import a8 from "@/assets/TVT01066.JPG.asset.json";
+import a9 from "@/assets/TVT01057.JPG.asset.json";
 import n1 from "@/assets/TVT00593.JPG.asset.json";
 import n2 from "@/assets/TVT00610.JPG.asset.json";
 import n3 from "@/assets/TVT00661.JPG.asset.json";
@@ -23,7 +23,7 @@ import n7 from "@/assets/TVT00743.JPG.asset.json";
 import n8 from "@/assets/TVT00744.JPG.asset.json";
 import n9 from "@/assets/TVT00792.JPG.asset.json";
 import n10 from "@/assets/TVT00576.JPG.asset.json";
-import music from "@/assets/leDuong.mp3";
+import musicAsset from "@/assets/leDuong.mp3.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
@@ -38,6 +38,7 @@ export const Route = createFileRoute("/")({
 });
 
 const newPhotos = [n1.url, n2.url, n3.url, n4.url, n5.url, n6.url, n7.url, n8.url, n9.url, n10.url];
+const [img1, img2, img3, img4, img5, img6, img7, img8, img9] = [a1.url, a2.url, a3.url, a4.url, a5.url, a6.url, a7.url, a8.url, a9.url];
 const photos = [img1, img2, img3, img4, img5, img6, img7, img8, img9];
 const gallery = [...newPhotos, ...photos.slice(2)];
 const weddingDate = new Date("2026-10-03T10:00:00+07:00").getTime();
@@ -123,7 +124,7 @@ function WeddingInvitation() {
   }
 
   return <main className="paper-texture min-h-screen text-foreground">
-    <audio ref={audioRef} src={music} loop preload="auto" />
+    <audio ref={audioRef} src={musicAsset.url} loop preload="metadata" />
     {!opened && <div className="fixed inset-0 z-50 grid place-items-center overflow-hidden bg-sky-soft px-6">
       <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/2 bg-secondary/40 [clip-path:polygon(0_35%,50%_0,100%_35%,100%_100%,0_100%)]" />
       <Button type="button" variant="envelope" onClick={enterInvitation} className="reveal-up relative grid aspect-[1.45] h-auto w-full max-w-sm place-items-center overflow-hidden p-0">
